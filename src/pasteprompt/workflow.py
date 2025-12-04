@@ -60,6 +60,11 @@ def generate_info_plist(
 
     Returns:
         Info.plist XML content
+
+    Note:
+        NSSendTypes is empty so the service appears without requiring text selection.
+        NSRequiredContext with NSTextContent ensures the service only appears in text contexts.
+        NSReturnTypes specifies the service outputs text to insert at cursor position.
     """
     menu_name = prompt.get_menu_name(include_key=include_key_in_name)
     full_name = _escape_xml(f"{prefix} - {menu_name}")
@@ -78,13 +83,14 @@ def generate_info_plist(
             <key>NSMessage</key>
             <string>runWorkflowAsService</string>
             <key>NSRequiredContext</key>
-            <dict/>
-            <key>NSSendFileTypes</key>
-            <array/>
+            <dict>
+                <key>NSTextContent</key>
+                <array>
+                    <string>Text</string>
+                </array>
+            </dict>
             <key>NSSendTypes</key>
-            <array>
-                <string>NSStringPboardType</string>
-            </array>
+            <array/>
             <key>NSReturnTypes</key>
             <array>
                 <string>NSStringPboardType</string>

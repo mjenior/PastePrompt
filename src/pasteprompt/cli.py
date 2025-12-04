@@ -433,6 +433,205 @@ def status():
         click.echo("\nRun 'pasteprompt init' to create a configuration file")
 
 
+@cli.group()
+def menubar():
+    """Menu bar application with global hotkey support."""
+    pass
+
+
+@menubar.command("start")
+@click.option(
+    "--config",
+    "-c",
+    type=click.Path(exists=True),
+    help="Path to prompts.yaml file",
+)
+@click.option(
+    "--hotkey",
+    "-k",
+    default="cmd+shift+p",
+    help="Global hotkey (default: cmd+shift+p)",
+)
+@click.option(
+    "--no-restore-clipboard",
+    is_flag=True,
+    help="Don't restore clipboard after paste",
+)
+@click.option(
+    "--no-notifications",
+    is_flag=True,
+    help="Disable notification messages",
+)
+def menubar_start(config: str | None, hotkey: str, no_restore_clipboard: bool, no_notifications: bool):
+    """
+    Start the PastePrompt menu bar application.
+
+    Runs in the foreground. The app provides:
+    - Menu bar icon with dropdown of all prompts
+    - Global hotkey (default: Cmd+Shift+P) for quick picker
+    - Auto-reload when config file changes
+
+    Use 'pasteprompt menubar install' for automatic startup on login.
+
+    \b
+    Example:
+        pasteprompt menubar start
+        pasteprompt menubar start --hotkey "cmd+shift+v"
+    """
+    # Check for required dependencies
+    try:
+        import rumps  # noqa: F401
+    except ImportError:
+        raise click.ClickException(
+            "Menu bar dependencies not installed.\n"
+            "Install with: pip install pasteprompt[menubar]\n"
+            "Or: pip install rumps pyobjc-framework-Cocoa pyobjc-framework-Quartz watchdog"
+        )
+
+    # Validate hotkey format
+    try:
+        from pasteprompt.menubar.hotkey import parse_hotkey, format_hotkey
+        parse_hotkey(hotkey)
+        hotkey_display = format_hotkey(hotkey)
+    except ValueError as e:
+        raise click.ClickException(f"Invalid hotkey format: {e}")
+
+    try:
+        from pasteprompt.menubar import run_menubar_app
+
+        config_path = Path(config) if config else None
+
+        click.echo("Starting PastePrompt menu bar app...")
+        click.echo(f"Global hotkey: {hotkey} ({hotkey_display})")
+        click.echo("Press Ctrl+C to quit\n")
+
+        run_menubar_app(
+            config_path=config_path,
+            hotkey=hotkey,
+            restore_clipboard=not no_restore_clipboard,
+            show_notifications=not no_notifications,
+        )
+
+    except KeyboardInterrupt:
+        click.echo("\nStopped")
+    except PastePromptError as e:
+        raise click.ClickException(str(e))
+
+
+@menubar.command("install")
+@click.option(
+    "--config",
+    "-c",
+    type=click.Path(exists=True),
+    help="Path to prompts.yaml file",
+)
+@click.option(
+    "--hotkey",
+    "-k",
+    default="cmd+shift+p",
+    help="Global hotkey",
+)
+def menubar_install(config: str | None, hotkey: str):
+    """
+    Install the menu bar app to start automatically on login.
+
+    Creates a LaunchAgent that starts the menu bar app when you log in.
+
+    \b
+    Example:
+        pasteprompt menubar install
+        pasteprompt menubar install --hotkey "cmd+shift+v"
+    """
+    # Validate hotkey format
+    try:
+        from pasteprompt.menubar.hotkey import parse_hotkey
+        parse_hotkey(hotkey)
+    except ImportError:
+        # Hotkey module not available, skip validation (will fail at runtime if invalid)
+        pass
+    except ValueError as e:
+        raise click.ClickException(f"Invalid hotkey format: {e}")
+
+    try:
+        from pasteprompt.launchagent import install_launch_agent
+
+        config_path = Path(config) if config else None
+
+        plist_path = install_launch_agent(
+            config_path=config_path,
+            hotkey=hotkey,
+        )
+
+        click.echo(f"{click.style('✓', fg='green')} Installed LaunchAgent: {plist_path}")
+        click.echo("\nThe menu bar app will start automatically on login.")
+        click.echo("To start now, run: pasteprompt menubar start")
+
+    except Exception as e:
+        raise click.ClickException(f"Failed to install LaunchAgent: {e}")
+
+
+@menubar.command("uninstall")
+def menubar_uninstall():
+    """
+    Remove the menu bar app from login items.
+
+    Removes the LaunchAgent so the app won't start on login.
+    """
+    try:
+        from pasteprompt.launchagent import uninstall_launch_agent
+
+        if uninstall_launch_agent():
+            click.echo(f"{click.style('✓', fg='green')} Removed LaunchAgent")
+            click.echo("The menu bar app will no longer start on login.")
+        else:
+            click.echo("LaunchAgent not found (already uninstalled)")
+
+    except Exception as e:
+        raise click.ClickException(f"Failed to uninstall LaunchAgent: {e}")
+
+
+@menubar.command("status")
+def menubar_status():
+    """
+    Show menu bar app status.
+
+    Displays whether the LaunchAgent is installed and if the app is running.
+    """
+    from pasteprompt.launchagent import get_launch_agent_status
+
+    status = get_launch_agent_status()
+
+    click.echo(click.style("Menu Bar App Status", bold=True))
+    click.echo()
+
+    if status["installed"]:
+        click.echo(f"LaunchAgent: {click.style('Installed', fg='green')}")
+        click.echo(f"  Path: {status['plist_path']}")
+    else:
+        click.echo(f"LaunchAgent: {click.style('Not installed', fg='yellow')}")
+        click.echo("  Run 'pasteprompt menubar install' to enable auto-start")
+
+    click.echo()
+
+    if status["running"]:
+        click.echo(f"App Status: {click.style('Running', fg='green')}")
+        if status["pid"]:
+            click.echo(f"  PID: {status['pid']}")
+    else:
+        click.echo(f"App Status: {click.style('Not running', fg='yellow')}")
+        click.echo("  Run 'pasteprompt menubar start' to start the app")
+
+    click.echo()
+
+    # Check dependencies
+    try:
+        import rumps  # noqa: F401
+        click.echo(f"Dependencies: {click.style('Installed', fg='green')}")
+    except ImportError:
+        click.echo(f"Dependencies: {click.style('Not installed', fg='red')}")
+        click.echo("  Run: pip install pasteprompt[menubar]")
+
+
 if __name__ == "__main__":
     cli()
 

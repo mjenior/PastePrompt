@@ -45,11 +45,17 @@ nano ~/.config/pasteprompt/prompts.yaml
 # 3. Build workflows
 pasteprompt build
 
-# 4. Verify installation
+# 4. Enable Services in System Settings (required on macOS Ventura+)
+#    Go to: System Settings > Keyboard > Keyboard Shortcuts > Services
+#    Enable the PastePrompt services under "Text"
+
+# 5. Verify installation
 pasteprompt list
 ```
 
 ## Usage
+
+### Option 1: Services Menu (Built-in)
 
 1. **In any text field** (VS Code, Terminal, Notes, browser, etc.)
 2. **Right-click** to open context menu
@@ -58,6 +64,38 @@ pasteprompt list
 5. Prompt text is inserted at cursor position
 
 Alternatively, access via the application menu: **App Name > Services > PastePrompt - [name]**
+
+### Option 2: Menu Bar App with Global Hotkey ⭐
+
+For faster access, use the menu bar app with global hotkey support:
+
+```bash
+# Install menu bar dependencies
+pip install pasteprompt[menubar]
+
+# Start the menu bar app
+pasteprompt menubar start
+```
+
+Then:
+1. **Press ⌘⇧P** (Cmd+Shift+P) anywhere to open the quick picker
+2. **Type to search** prompts by name or content
+3. **Press Enter** to paste the selected prompt instantly
+
+Or click the 📋 menu bar icon to see all prompts in a dropdown.
+
+#### Auto-Start on Login
+
+```bash
+# Install for automatic startup
+pasteprompt menubar install
+
+# Check status
+pasteprompt menubar status
+
+# Remove from login items
+pasteprompt menubar uninstall
+```
 
 ## Configuration
 
@@ -93,6 +131,28 @@ prompts:
 | `prefix` | `"PastePrompt"` | Prefix for all menu items |
 | `include_key_in_name` | `false` | When `true`, shows key in menu (e.g., `"[investigate] Investigate"`) |
 
+### Menu Bar Settings
+
+Add these under `settings.menubar` in your config:
+
+```yaml
+settings:
+  menubar:
+    hotkey: "cmd+shift+p"        # Global hotkey (default: ⌘⇧P)
+    restore_clipboard: true       # Restore clipboard after paste
+    show_notifications: true      # Show notification messages
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `hotkey` | `"cmd+shift+p"` | Global hotkey for quick picker |
+| `restore_clipboard` | `true` | Restore original clipboard after pasting |
+| `show_notifications` | `true` | Show macOS notifications |
+
+**Hotkey format**: Use `+` to combine modifiers: `cmd`, `shift`, `ctrl`/`control`, `alt`/`option`/`opt`
+
+Examples: `cmd+shift+p`, `cmd+shift+1`, `ctrl+alt+v`
+
 ### Prompt Options
 
 | Field | Required | Description |
@@ -107,7 +167,7 @@ prompts:
 ```
 pasteprompt [command]
 
-Commands:
+Core Commands:
   init      Create default configuration file
   build     Generate Automator workflows from config
   list      List all available prompts
@@ -116,6 +176,12 @@ Commands:
   clean     Remove all PastePrompt workflows
   refresh   Refresh macOS Services menu
   status    Show current installation status
+
+Menu Bar Commands:
+  menubar start      Start the menu bar app (foreground)
+  menubar install    Install for auto-start on login
+  menubar uninstall  Remove from login items
+  menubar status     Show menu bar app status
 ```
 
 ### Common Operations
@@ -168,19 +234,34 @@ pasteprompt list --config ./my-prompts.yaml
 
 ### Services Menu Not Showing
 
-1. **Refresh Services Cache**:
+1. **Enable Services in System Settings** (most common issue on macOS Ventura+):
+   - Open **System Settings > Keyboard > Keyboard Shortcuts > Services**
+   - Scroll to the **Text** section
+   - Enable the PastePrompt services you want to use
+   - Alternatively, open directly via Terminal:
+     ```bash
+     open "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Services"
+     ```
+
+2. **Refresh Services Cache**:
    ```bash
    pasteprompt refresh
    # or manually:
+   /System/Library/CoreServices/pbs -flush
    /System/Library/CoreServices/pbs -update
    ```
 
-2. **Check Workflow Location**:
+3. **Check Workflow Location**:
    ```bash
    ls -la ~/Library/Services/PastePrompt*
    ```
 
-3. **Log out and back in** - Sometimes required for Services to update
+4. **Log out and back in** - Sometimes required for Services to update
+
+5. **Rebuild workflows** if you upgraded from an older version:
+   ```bash
+   pasteprompt build --force
+   ```
 
 ### Prompt Not Inserting
 
@@ -195,12 +276,36 @@ pasteprompt list --config ./my-prompts.yaml
    pasteprompt status
    ```
 
+3. **Ensure cursor is in a text field** - Services only work in editable text contexts
+
 ### Permission Issues
 
 The first time a workflow runs, macOS may prompt for permissions:
-- Go to **System Preferences > Security & Privacy > Privacy**
+- Go to **System Settings > Privacy & Security > Privacy**
 - Enable **Accessibility** for Automator
 - Enable **Automation** for your terminal app
+
+### Menu Bar App Issues
+
+**Global hotkey not working:**
+1. Grant Accessibility permissions:
+   - Open **System Settings > Privacy & Security > Accessibility**
+   - Add and enable your terminal app (Terminal, iTerm, etc.)
+   - If running as a standalone app, add Python or the app itself
+
+2. Restart the menu bar app:
+   ```bash
+   pasteprompt menubar start
+   ```
+
+**Paste not inserting text:**
+- Ensure the cursor is in an editable text field
+- Check that Accessibility permissions are granted
+- Try clicking the menu bar icon and selecting a prompt directly
+
+**Menu bar icon not appearing:**
+- Check that the app is running: `pasteprompt menubar status`
+- Ensure rumps dependencies are installed: `pip install pasteprompt[menubar]`
 
 ## Development
 

@@ -5,6 +5,13 @@
 settings:
   prefix: "PastePrompt"          # Prefix for menu items
   include_key_in_name: false     # Show key in menu (e.g., "[investigate] Investigate")
+  
+  # Menu bar app settings (optional)
+  # These are used when running 'pasteprompt menubar start'
+  menubar:
+    hotkey: "cmd+shift+p"        # Global hotkey for quick picker (⌘⇧P)
+    restore_clipboard: true       # Restore original clipboard after paste
+    show_notifications: true      # Show notification messages
 
 prompts:
   # === Investigation & Analysis ===

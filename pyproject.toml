@@ -36,6 +36,16 @@ dev = [
     "mypy>=1.0.0",
     "types-PyYAML>=6.0.0",
 ]
+menubar = [
+    "rumps>=0.4.0",
+    "pyobjc-framework-Cocoa>=10.0",
+    "pyobjc-framework-Quartz>=10.0",
+    "pyobjc-framework-ApplicationServices>=10.0",
+    "watchdog>=3.0.0",
+]
+all = [
+    "pasteprompt[dev,menubar]",
+]
 
 [project.scripts]
 pasteprompt = "pasteprompt.cli:cli"

@@ -8,6 +8,11 @@
     
     Placeholders:
     - {{MENU_NAME}}: The full menu name including prefix (e.g., "PastePrompt - Investigate")
+    
+    Key configuration notes:
+    - NSSendTypes is empty so the service appears without requiring text selection
+    - NSRequiredContext with NSTextContent ensures service only appears in text contexts
+    - NSReturnTypes specifies the service outputs text to insert at cursor position
 -->
 <plist version="1.0">
 <dict>
@@ -22,13 +27,14 @@
             <key>NSMessage</key>
             <string>runWorkflowAsService</string>
             <key>NSRequiredContext</key>
-            <dict/>
-            <key>NSSendFileTypes</key>
-            <array/>
+            <dict>
+                <key>NSTextContent</key>
+                <array>
+                    <string>Text</string>
+                </array>
+            </dict>
             <key>NSSendTypes</key>
-            <array>
-                <string>NSStringPboardType</string>
-            </array>
+            <array/>
             <key>NSReturnTypes</key>
             <array>
                 <string>NSStringPboardType</string>

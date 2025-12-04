@@ -12,6 +12,16 @@ DEFAULT_CONFIG_DIR = Path.home() / ".config" / "pasteprompt"
 DEFAULT_PROMPTS_FILE = DEFAULT_CONFIG_DIR / "prompts.yaml"
 SERVICES_DIR = Path.home() / "Library" / "Services"
 
+# Menu bar app defaults
+DEFAULT_MENUBAR_HOTKEY = "cmd+shift+p"
+DEFAULT_RESTORE_CLIPBOARD = True
+DEFAULT_SHOW_NOTIFICATIONS = True
+
+# LaunchAgent paths
+LAUNCH_AGENTS_DIR = Path.home() / "Library" / "LaunchAgents"
+LAUNCH_AGENT_LABEL = "com.pasteprompt.menubar"
+LAUNCH_AGENT_PLIST = LAUNCH_AGENTS_DIR / f"{LAUNCH_AGENT_LABEL}.plist"
+
 
 def get_config_path(config_arg: str | None = None) -> Path:
     """
