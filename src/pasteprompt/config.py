@@ -100,9 +100,51 @@ def get_python_executable() -> str:
     return sys.executable
 
 
+def _get_example_config_path() -> Path | None:
+    """
+    Find the path to prompts.example.yaml file.
+
+    Checks multiple locations:
+    1. Relative to repo root from package location (development)
+    2. Relative to current working directory (development)
+    3. By walking up directory tree to find repo root
+
+    Returns:
+        Path to example config file, or None if not found
+    """
+    # File is at: src/pasteprompt/config.py
+    # Repo root should be: parent.parent.parent (go up 3 levels)
+    config_file = Path(__file__)  # src/pasteprompt/config.py
+    repo_root = config_file.parent.parent.parent  # Go up to repo root
+    example_path = repo_root / "config" / "prompts.example.yaml"
+    if example_path.exists():
+        return example_path
+
+    # Try relative to current working directory (development)
+    cwd_path = Path.cwd() / "config" / "prompts.example.yaml"
+    if cwd_path.exists():
+        return cwd_path
+
+    # Try finding repo root by walking up and looking for config directory
+    current = Path(__file__).parent
+    while current != current.parent:
+        example_path = current / "config" / "prompts.example.yaml"
+        if example_path.exists():
+            return example_path
+        parent_config = current.parent / "config" / "prompts.example.yaml"
+        if parent_config.exists():
+            return parent_config
+        current = current.parent
+
+    return None
+
+
 def create_default_config(output_path: Path | None = None) -> Path:
     """
     Create a default prompts.yaml with example prompts.
+
+    Reads from config/prompts.example.yaml if available, otherwise uses
+    a fallback default configuration.
 
     Args:
         output_path: Optional custom path. If None, uses DEFAULT_PROMPTS_FILE
@@ -114,61 +156,101 @@ def create_default_config(output_path: Path | None = None) -> Path:
         ensure_config_dir()
         output_path = DEFAULT_PROMPTS_FILE
 
-    default_config = '''# PastePrompt Configuration
-# Location: ~/.config/pasteprompt/prompts.yaml
+    # Try to read from the example file
+    example_path = _get_example_config_path()
+    if example_path and example_path.exists():
+        default_config = example_path.read_text(encoding="utf-8")
+    else:
+        # Fallback to hardcoded default if example file not found
+        default_config = '''# PastePrompt Example Configuration
+# Copy this file to ~/.config/pasteprompt/prompts.yaml
 # Documentation: https://github.com/mjenior/pasteprompt
 
 settings:
-  prefix: "PastePrompt"
-  include_key_in_name: false
+  prefix: "PastePrompt"          # Prefix for menu items
+  include_key_in_name: false     # Show key in menu (e.g., "[investigate] Investigate")
 
 prompts:
   # === Investigation & Analysis ===
   investigate:
-    content: "Meticulously investigate the most likely collection of root causes for the following stdout logs. Return all possible causes ranked in terms of severity."
+    content: "Methodically investigate the most likely collection of root causes for the following stdout logs. Return all possible causes ranked in terms of severity."
     display_name: "Investigate"
+    description: "Analyze logs for root causes"
     category: "Analysis"
 
   analyze:
-    content: "Painstakingly analyze the full code implementation of this plan to ensure that there are no missing components, potential improvements, lingering bugs, and silent errors. Implement any necessary changes identified in this search."
+    content: "Thoroughly analyze the full code implementation of this plan to ensure that there are no missing components, potential improvements, lingering bugs, and silent errors. Implement any necessary changes identified in this search."
     display_name: "Analyze"
+    description: "Deep code analysis"
     category: "Analysis"
 
   peripheral_analysis:
-    content: "Since further issues were identified, perform a supplementary analysis of the peripheral code sections for any additional potential problems. It is also possible that no outstanding issues still exist and implement the required fixes."
+    content: "Since further issues were identified, perform a supplementary analysis of the peripheral code sections for any additional potential problems. It is also possible that no outstanding issues still exist."
     display_name: "Peripheral Analysis"
+    description: "Analyze surrounding code"
     category: "Analysis"
 
   # === Planning & Strategy ===
   strategize:
     content: "Analyze ALL related sections of the codebase to your findings and create a comprehensive and detailed strategy to address all related issues. Be sure to include peripheral code regions in your analysis which reference or import the impacted code regions."
     display_name: "Strategize"
+    description: "Create comprehensive strategy"
     category: "Planning"
 
   evaluate:
     content: "Evaluate this plan now and restructure as necessary to be as parsimonious as possible with the current codebase, while maintaining ALL of the desired functionality. This should ensure an easier to maintain codebase moving forward."
     display_name: "Evaluate"
+    description: "Evaluate and optimize plan"
     category: "Planning"
 
   recommendations:
-    content: "Critically assess all combined planning now and create what would be the most recommended approach. Keep in mind that combining elements of each may actually provide the most optimal implementation for addressing all of the underlying issues."
+    content: "Critically assess all combined planning now and create what would be the most recommended approach. Keep in mind that combining elements of each may actually provide the most optimal implementation for addressing all of the required functionality."
     display_name: "Recommendations"
+    description: "Generate recommendations"
     category: "Planning"
 
   save_plan:
     content: "Save this complete refined hybrid plan to a new text file. All changes will be implemented by an LLM downstream, therefore include relevant details and formatting accordingly."
     display_name: "Save Plan"
+    description: "Save plan to file"
     category: "Planning"
 
   # === Implementation ===
   implement:
-    content: "Thoroughly read and understand the provided implementation plan, only after which you may begin applying the highest priority listed refactors or upgrades."
+    content: "Thoroughly read and understand the provided implementation plan, only after which you may begin applying the highest priority listed features, refactors, or upgrades."
     display_name: "Implement"
+    description: "Start implementation"
     category: "Implementation"
 
   complete:
     content: "Carefully review the planning document and implement any remaining or skipped updates now."
     display_name: "Complete"
+    description: "Complete remaining tasks"
+    category: "Implementation"
+
+  # === Code Review ===
+  detailed_review:
+    content: |
+      Please review this code with attention to:
+      1. Correctness and logic errors
+      2. Performance implications
+      3. Security vulnerabilities
+      4. Code style and readability
+      
+      Provide specific line-by-line feedback.
+    display_name: "Detailed Code Review"
+    description: "Comprehensive code review"
+    category: "Review"
+
+  # Simple format examples (just key: content)
+  explain:
+    content: "Explain this code in detail, including what each function does and how they work together."
+    display_name: "Explain Code"
+    category: "Review"
+
+  refactor:
+    content: "Refactor this code to improve readability, maintainability, and performance while preserving all existing functionality."
+    display_name: "Refactor"
     category: "Implementation"
 '''
 
