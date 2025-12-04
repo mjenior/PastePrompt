@@ -21,6 +21,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Clone and install
 git clone https://github.com/mjenior/pasteprompt.git
 cd pasteprompt
+uv venv
 uv pip install -e .
 ```
 
