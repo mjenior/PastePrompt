@@ -1,0 +1,28 @@
+prompts:
+  investigate:
+    content: "Methodically investigate the most likely collection of root causes for the following stdout logs. Return all possible causes ranked in terms of severity."
+
+  strategize:
+    content: "Analyze ALL related sections of the codebase to your findings and create a comprehensive and detailed strategy to address all related issues. Be sure to include peripheral code regions in your analysis which reference or import the impacted code regions."
+
+  evaluate:
+    content: "Evaluate this plan now and restructure as necessary to be as parsimonious as possible with the current codebase, while maintaining ALL of the desired functionality. This should ensure an easier to maintain codebase moving forward."
+
+  recommendations:
+    content: "Critically assess all combined planning now and create what would be the most recommended approach. Keep in mind that combining elements of each may actually provide the most optimal implementation for addressing all of the underlying issues."
+
+  save_plan:
+    content: "Save this complete refined hybrid plan to a new text file. All changes will be implemented by an LLM downstream, therefore include relevant details and formatting accordingly."
+
+  implement:
+    content: "Fully read and understand the provided implementation plan, only after which you may begin applying the highest priority listed features, refactors, or upgrades."
+  
+  complete:
+    content: "Carefully review the planning document and implement any remaining or skipped updates now."
+
+  analyze:
+    content: "Thoroughly analyze the full code implementation of this plan to ensure that there are no missing components, potential improvements, lingering bugs, and silent errors. Implement any necessary changes identified in this search."
+
+  peripheral_analysis:
+    content: "Since further issues were identified, perform a supplementary analysis of the peripheral code sections for any additonal potential problems. It is also possible that no outstanding issues still exist."
+

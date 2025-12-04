@@ -1,0 +1,91 @@
+# PastePrompt Example Configuration
+# Copy this file to ~/.config/pasteprompt/prompts.yaml
+# Documentation: https://github.com/mjenior/pasteprompt
+
+settings:
+  prefix: "PastePrompt"          # Prefix for menu items
+  include_key_in_name: false     # Show key in menu (e.g., "[investigate] Investigate")
+
+prompts:
+  # === Investigation & Analysis ===
+  investigate:
+    content: "Meticulously investigate the most likely collection of root causes for the following stdout logs. Return all possible causes ranked in terms of severity."
+    display_name: "Investigate"
+    description: "Analyze logs for root causes"
+    category: "Analysis"
+
+  analyze:
+    content: "Painstakingly analyze the full code implementation of this plan to ensure that there are no missing components, potential improvements, lingering bugs, and silent errors. Implement any necessary changes identified in this search."
+    display_name: "Analyze"
+    description: "Deep code analysis"
+    category: "Analysis"
+
+  peripheral_analysis:
+    content: "Since further issues were identified, perform a supplementary analysis of the peripheral code sections for any additional potential problems. It is also possible that no outstanding issues still exist and implement the required fixes."
+    display_name: "Peripheral Analysis"
+    description: "Analyze surrounding code"
+    category: "Analysis"
+
+  # === Planning & Strategy ===
+  strategize:
+    content: "Analyze ALL related sections of the codebase to your findings and create a comprehensive and detailed strategy to address all related issues. Be sure to include peripheral code regions in your analysis which reference or import the impacted code regions."
+    display_name: "Strategize"
+    description: "Create comprehensive strategy"
+    category: "Planning"
+
+  evaluate:
+    content: "Evaluate this plan now and restructure as necessary to be as parsimonious as possible with the current codebase, while maintaining ALL of the desired functionality. This should ensure an easier to maintain codebase moving forward."
+    display_name: "Evaluate"
+    description: "Evaluate and optimize plan"
+    category: "Planning"
+
+  recommendations:
+    content: "Critically assess all combined planning now and create what would be the most recommended approach. Keep in mind that combining elements of each may actually provide the most optimal implementation for addressing all of the underlying issues."
+    display_name: "Recommendations"
+    description: "Generate recommendations"
+    category: "Planning"
+
+  save_plan:
+    content: "Save this complete refined hybrid plan to a new text file. All changes will be implemented by an LLM downstream, therefore include relevant details and formatting accordingly."
+    display_name: "Save Plan"
+    description: "Save plan to file"
+    category: "Planning"
+
+  # === Implementation ===
+  implement:
+    content: "Thoroughly read and understand the provided implementation plan, only after which you may begin applying the highest priority listed refactors or upgrades."
+    display_name: "Implement"
+    description: "Start implementation"
+    category: "Implementation"
+
+  complete:
+    content: "Carefully review the planning document and implement any remaining or skipped updates now."
+    display_name: "Complete"
+    description: "Complete remaining tasks"
+    category: "Implementation"
+
+  # === Code Review ===
+  detailed_review:
+    content: |
+      Please review this code with attention to:
+      1. Correctness and logic errors
+      2. Performance implications
+      3. Security vulnerabilities
+      4. Code style and readability
+      
+      Provide specific line-by-line feedback.
+    display_name: "Detailed Code Review"
+    description: "Comprehensive code review"
+    category: "Review"
+
+  # Simple format examples (just key: content)
+  explain:
+    content: "Explain this code in detail, including what each function does and how they work together."
+    display_name: "Explain Code"
+    category: "Review"
+
+  refactor:
+    content: "Refactor this code to improve readability, maintainability, and performance while preserving all existing functionality."
+    display_name: "Refactor"
+    category: "Implementation"
+
